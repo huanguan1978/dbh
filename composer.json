@@ -1,0 +1,34 @@
+{
+    "name": "orz/dbh",
+    "description": "DatabaseHandle",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "crown.hg",
+            "email": "crown.hg@gmail.com"
+        }
+    ],
+    "require": {
+        "catfan/medoo": "^2.1",
+        "wixel/gump": "^1.12",
+        "orz/plog": "^0.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dbh\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Dbh\\Tests\\": "tests/"
+        }
+    },	
+    "scripts": {
+	    "test": "vendor/bin/phpunit tests"
+    } 
+    
+}
