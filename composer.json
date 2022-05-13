@@ -29,6 +29,21 @@
     },	
     "scripts": {
 	    "test": "vendor/bin/phpunit tests"
+    },
+
+    "extra": {
+        "think":{
+            "services":[
+                "Dbh\\thinkphp\\services\\DbhService"
+            ]      
+        },       
+        "laravel": {
+            "providers": [
+                "Dbh\\Laravel\\Providers\\DbhServiceProvider"
+            ],
+            "aliases": {
+                "dbh": "Dbh\\Laravel\\Facades\\DbhFacade"
+            }            
+        }
     } 
-    
 }

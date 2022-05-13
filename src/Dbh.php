@@ -18,6 +18,7 @@ class Dbh {
       $_dbh - 数据库资源阵列
       @var array
     */
+    
     private $_dbh = [
         'rw'=>null, // 读写
         'wo'=>null, // 仅写
@@ -33,7 +34,10 @@ class Dbh {
         'fs'=>null, // 文件系统
     ];
 
-    function __construct (){
+    function __construct ($dbh=null){
+        if($dbh){
+            $this->dbh('rw', $dbh);
+        }
     }
 
     function __destruct(){
@@ -45,11 +49,17 @@ class Dbh {
       @param PDO $pod PDO连接对象
       @return object 已实例化过的logger对象
     */
-    protected function _dblog(string $tablename, PDO $pdo){
+    function _dblog(string $drivername, string $tablename=null, \PDO $pdo=null){
+        if(empty($tablename)){ $tablename = '_plog';
+        }
+        if(empty($pdo)){ $pdo = $this->dbh('wo')->pdo;
+        }
+
         $log = Plogger::getInstance();
         $log->setOptions(['logFormat' => 'Y-m-d H:i:s']);
+        $log->dbtype($drivername);        
         $log->dblink($pdo);
-        $log->dbtable($table);
+        $log->dbtable($tablename,true);
         $this->_log['db'] = $log;
         return $this->_log['db'];
     }
@@ -60,10 +70,15 @@ class Dbh {
       @param string $file 日志存放在那个文件
       @return object 已实例化过的logger对象
     */
-    protected function _fslog(string $path=null, string $file=null){
+    function _fslog(string $path=null, string $file=null){
+        if($path && (substr($path, -1)==DIRECTORY_SEPARATOR)){
+                $path = substr($path, 0, -1);
+        }
         $log = Tlogger::getInstance();
         $log->setOptions(['logFormat' => 'Y-m-d H:i:s']);
-        $log->pathfile($path, $file);
+        $log->logpath($path);
+        if($file){ $log->log_file = $file;
+        }
         $this->_log['fs'] = $log;
         return $this->_log['fs'];
     }
@@ -83,12 +98,12 @@ class Dbh {
     }
 
     /**
-      传递且包装PDO连接为Medoo对象
-      @param string $name 那种连接类型 rw|ro|wo即读写|仅读|仅写
-      @param string $pdo 替换$name指定类型的PDO对象实例
-      @return object 已实例化过的Medoo对象
+     * 传递且包装PDO连接为Medoo对象
+     * @param string $name 那种连接类型 rw|ro|wo即读写|仅读|仅写
+     * @param string $pdo 替换$name指定类型的PDO对象实例
+     * @param array $optioanl 初始化Medoo对象时的选参
     */
-    function dbh(string $name='rw', $pdo=null, string $dbtype=null):Medoo {
+    function dbh(string $name='rw', $pdo=null, string $dbtype=null, array $optional=null):Medoo {
         if($pdo){
             $param = ['pdo'=>$pdo];
             if(empty($dbtype)){
@@ -97,14 +112,18 @@ class Dbh {
             if($dbtype){
                 $param['type'] = $dbtype;
             }
+            if($optional){
+                $param = array_merge($optional, $param);
+            }
+
             $mdb = new Medoo($param);
             $this->_dbh[$name] = $mdb;
             if($name=='rw'){
                 if(empty($this->_dbh['wo'])){
-                    $this->_dbh['dbwo'] =  $mdb;
+                    $this->_dbh['wo'] =  $mdb;
                 }
-                if(empty($this->_dbh['dbro'])){
-                    $this->_dbh['dbro'] =  $mdb;
+                if(empty($this->_dbh['ro'])){
+                    $this->_dbh['ro'] =  $mdb;
                 }
             }
         }
@@ -138,49 +157,122 @@ class Dbh {
     }
 
     /**
-      获取TP5的PDO连接对象，用think\Db
-      @return object 已实例化过的PDO对象
+      获取TP5的PDO连接对象，用门面\think\Db的connect获得实例
+      @return array 数组结构返回，键driver为数据驱动器名称，键linker为数据连接器实例
     */
-    function _link_tp5db(){
-        $link = null;
-        $cls = get_declared_classes();
-        if(in_array('think\Db', $cls)){
-            $inst =  Db::connect();
-            $rst = $inst->query('select 1;');
-            $link = $inst->getConnection();
-            $link = $link->getPdo();
-        }
+    function _link_tp5db():array {
+        $link = [];
+
+        $inst = \think\Db::connect();
+        $rst = $inst->query('select 1;');
+        $conn = $inst->getConnection();
+
+        $link = [
+            'linker'=>$conn->getPdo(),
+            'driver'=>$conn->getConfig('type'),
+            ];
         return $link;
     }
+
+   /**
+      获取TP6的PDO连接对象，用助手函数app(db)的connect获得实例
+      @return array 数组结构返回，键driver为数据驱动器名称，键linker为数据连接器实例
+    */
+    function _link_tp6db():array {
+        $link = [];
+
+        $inst = app('db');
+        $conn = $inst->connect();
+        $rst = $inst->query('select 1;');
+
+        $link = [
+            'linker'=>$conn->getPdo(),
+            'driver'=>$conn->getConfig('type'),
+            ];
+        return $link;
+    }
+
 
     /**
-      获取TP5的PDO连接对象，用think\Config
-      @return object 已实例化过的PDO对象
+      获取Lv6的PDO连接对象，用助手函数app获取db.connection实例
+      @return array 数组结构返回，键driver为数据驱动器名称，键linker为数据连接器实例
     */
-    function _link_tp5cnf(){
-        $link = null;
-        $cls = get_declared_classes();
-        if(in_array('think\Db', $cls)){
-            $cnf = Db::getConfig();
-            $dsn = sprintf("%s:dbname=%s;host=%s", $cnf['type'], $cnf['database'], $cnf['hostname']);
-            $link = new PDO($dsn, $cnf['username'], $cnf['password']);
+    static function _link_lv6db(string $name=null):array {
+        $link = [];
+        $inst = app('db.connection');
+        if($inst){
+            $link = [
+                'linker'=>$inst->getPdo(),
+                'driver'=>$inst->getDriverName(),
+             ];
         }
+       return $link;
+    }
+
+
+   /**
+      获取CI4的PDO连接对象，用db_connet()实例的属性拼接DSN后初始化PDO实例
+      @return array 数组结构返回，键driver为数据驱动器名称，键linker为数据连接器实例
+    */
+    function _link_ci4db():array {
+        $link = [];
+
+        $inst = db_connect();
+        $_driver = $driver = $inst->DBDriver;
+        if($driver=='MySQLi'){            $_driver = 'mysql';        }
+        if($driver=='Postgre'){            $_driver = 'pgsql';        }
+        if($driver=='SQLite3'){            $_driver = 'sqlite';        }
+        if($driver=='SQLSRV'){            $_driver = 'sqlsrv';        }
+
+        $dsn = sprintf('%s:host=%s;port=%s;dbname=%s', 
+            $_driver, $inst->hostname, $inst->port, $inst->database);
+        if($driver=='SQLSRV'){
+            $dsn = sprintf('%s:Server=%,%s;Datebase=%s', 
+            $_driver, $inst->hostname, $inst->port, $inst->database);
+        }
+
+        // var_dump($dsn);exit;
+        $linker = null;
+        try {
+            $linker = new \PDO($dsn, $inst->username, $inst->password);
+        } catch (\PDOException $e) {
+            die($e->getMessage() );
+        }
+        
+        $link = [
+            'linker'=>$linker,
+            'driver'=>$_driver,
+            ];
         return $link;
     }
 
-    /**
-      获取Lv6的PDO连接对象，用门面Db
-      @return object 已实例化过的PDO对象
+   /**
+      获取CI3的PDO连接对象，用get_instance()实例的db下的conn_id属性获得实例
+      需要CI3的config/database.php中dbdriver='pdo'
+      @return array 数组结构返回，键driver为数据驱动器名称，键linker为数据连接器实例
     */
-    function _link_lv6db(string $name=null){
-        $link = null;
-        $cls = get_declared_classes();
-        if(in_array('Db', $cls)){
-            $link = DB::connection($name)->getPdo();
+    function _link_ci3db():array {
+        $link = [];
+
+        $inst = & get_instance();
+        $db = $inst->db;
+        $driver = $db->dbdriver;
+        if('pdo' == $driver){
+            $driver = $db->subdriver;
         }
+
+        $link = [
+            'linker'=>$inst->db->conn_id,
+            'driver'=>$driver,
+            ];
         return $link;
     }
 
+
+
+    function _get_declared_classes() {
+        return get_declared_classes();
+    }
 
     //cls.end
 }
