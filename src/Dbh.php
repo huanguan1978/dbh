@@ -166,11 +166,22 @@ class Dbh {
         $inst = \think\Db::connect();
         $rst = $inst->query('select 1;');
         $conn = $inst->getConnection();
-
+        $conf = $conn->getConfig();
         $link = [
             'linker'=>$conn->getPdo(),
-            'driver'=>$conn->getConfig('type'),
-            ];
+            'driver'=>$conf['type'],
+            'optional'=>[
+                'prefix'=>$conf['prefix'],
+                'logging'=>$conf['debug'],
+            ],
+        ];
+        $optional = ['charset', 'collation', 'port', ];
+        foreach($optional as $item){
+            if(isset($conf[$item]) && !empty($conf[$item]) ){
+                $link['optional'][$item] = $conf[$item];
+            }    
+        }
+
         return $link;
     }
 
@@ -185,10 +196,22 @@ class Dbh {
         $conn = $inst->connect();
         $rst = $inst->query('select 1;');
 
+        $conf = $conn->getConfig();
         $link = [
             'linker'=>$conn->getPdo(),
-            'driver'=>$conn->getConfig('type'),
-            ];
+            'driver'=>$conf['type'],
+            'optional'=>[
+                'prefix'=>$conf['prefix'],
+                'logging'=>$conf['debug'],
+            ],
+        ];
+        $optional = ['charset', 'collation', 'port', ];
+        foreach($optional as $item){
+            if(isset($conf[$item]) && !empty($conf[$item]) ){                
+                $link['optional'][$item] = $conf[$item];
+            }    
+        }
+
         return $link;
     }
 
@@ -200,12 +223,24 @@ class Dbh {
     static function _link_lv6db(string $name=null):array {
         $link = [];
         $inst = app('db.connection');
+
+        $conf = $inst->getConfig();
         if($inst){
             $link = [
                 'linker'=>$inst->getPdo(),
                 'driver'=>$inst->getDriverName(),
+                'optional'=>[
+                    'prefix'=>$conf['prefix'],
+                ],                
              ];
         }
+        $optional = ['charset', 'collation', 'port', ];
+        foreach($optional as $item){
+            if(isset($conf[$item]) && !empty($conf[$item]) ){
+                $link['optional'][$item] = $conf[$item];
+            }    
+        }
+
        return $link;
     }
 
@@ -231,18 +266,31 @@ class Dbh {
             $_driver, $inst->hostname, $inst->port, $inst->database);
         }
 
-        // var_dump($dsn);exit;
+
         $linker = null;
         try {
             $linker = new \PDO($dsn, $inst->username, $inst->password);
         } catch (\PDOException $e) {
             die($e->getMessage() );
         }
-        
+        // var_dump(config('Database'));exit;
+
         $link = [
             'linker'=>$linker,
             'driver'=>$_driver,
-            ];
+            'optional'=>[
+                'prefix'=>$inst->DBPrefix,
+                'logging'=>$inst->DBDebug,
+            ],               
+        ];
+
+        $optional = ['charset'=>'charset', 'collation'=>'DBCollat', 'port'=>'port', ];
+        foreach($optional as $k=>$v){
+            if(isset($inst->$v) && !empty($inst->$v) ){
+                $link['optional'][$k] = $inst->$v;
+            }    
+        } 
+
         return $link;
     }
 
@@ -264,7 +312,19 @@ class Dbh {
         $link = [
             'linker'=>$inst->db->conn_id,
             'driver'=>$driver,
-            ];
+            'optional'=>[
+                'prefix'=>$inst->dbprefix,
+                'logging'=>$inst->db_debug,
+            ],                 
+        ];
+
+        $optional = ['charset'=>'char_set', 'collation'=>'dbcollat', 'port'=>'port', ];
+        foreach($optional as $k=>$v){
+            if(isset($inst->$v) && !empty($inst->$v) ){
+                $link['optional'][$k] = $inst->$v;
+            }    
+        }        
+
         return $link;
     }
 

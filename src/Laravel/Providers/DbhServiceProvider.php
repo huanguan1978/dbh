@@ -37,7 +37,7 @@ class DbhServiceProvider extends ServiceProvider
         $inst = app('dbh');
         $link = $inst->_link_lv6db();
         if($link){
-            $inst->dbh('rw', $link['linker'], $link['driver']); 
+            $inst->dbh('rw', $link['linker'], $link['driver'], $link['optional']);
             $inst->_dblog($link['driver']); // dblog object init                    
         }
         

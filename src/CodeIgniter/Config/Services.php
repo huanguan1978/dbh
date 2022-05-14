@@ -27,7 +27,7 @@ class Services extends BaseService {
         $link = $inst->_link_ci4db();
         // var_dump($link);exit;
         if($link){
-            $inst->dbh('rw', $link['linker'], $link['driver']);
+            $inst->dbh('rw', $link['linker'], $link['driver'], $link['optional']);
             $inst->_dblog($link['driver']); // dblog object init        
         }
         return $inst;        

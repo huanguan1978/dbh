@@ -39,7 +39,7 @@ class DbhService extends \think\Service
 
         $link = $inst->_link_tp6db();
         if($link){
-            $inst->dbh('rw', $link['linker'], $link['driver']);
+            $inst->dbh('rw', $link['linker'], $link['driver'], $link['optional']);
             $inst->_dblog($link['driver']); // dblog object init                    
         }        
     }
