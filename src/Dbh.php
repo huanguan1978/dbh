@@ -18,7 +18,7 @@ class Dbh {
       $_dbh - 数据库资源阵列
       @var array
     */
-    
+
     private $_dbh = [
         'rw'=>null, // 读写
         'wo'=>null, // 仅写
@@ -57,7 +57,7 @@ class Dbh {
 
         $log = Plogger::getInstance();
         $log->setOptions(['logFormat' => 'Y-m-d H:i:s']);
-        $log->dbtype($drivername);        
+        $log->dbtype($drivername);
         $log->dblink($pdo);
         $log->dbtable($tablename,true);
         $this->_log['db'] = $log;
@@ -179,7 +179,7 @@ class Dbh {
         foreach($optional as $item){
             if(isset($conf[$item]) && !empty($conf[$item]) ){
                 $link['optional'][$item] = $conf[$item];
-            }    
+            }
         }
 
         return $link;
@@ -207,9 +207,9 @@ class Dbh {
         ];
         $optional = ['charset', 'collation', 'port', ];
         foreach($optional as $item){
-            if(isset($conf[$item]) && !empty($conf[$item]) ){                
+            if(isset($conf[$item]) && !empty($conf[$item]) ){
                 $link['optional'][$item] = $conf[$item];
-            }    
+            }
         }
 
         return $link;
@@ -231,14 +231,14 @@ class Dbh {
                 'driver'=>$inst->getDriverName(),
                 'optional'=>[
                     'prefix'=>$conf['prefix'],
-                ],                
+                ],
              ];
         }
         $optional = ['charset', 'collation', 'port', ];
         foreach($optional as $item){
             if(isset($conf[$item]) && !empty($conf[$item]) ){
                 $link['optional'][$item] = $conf[$item];
-            }    
+            }
         }
 
        return $link;
@@ -259,10 +259,10 @@ class Dbh {
         if($driver=='SQLite3'){            $_driver = 'sqlite';        }
         if($driver=='SQLSRV'){            $_driver = 'sqlsrv';        }
 
-        $dsn = sprintf('%s:host=%s;port=%s;dbname=%s', 
+        $dsn = sprintf('%s:host=%s;port=%s;dbname=%s',
             $_driver, $inst->hostname, $inst->port, $inst->database);
         if($driver=='SQLSRV'){
-            $dsn = sprintf('%s:Server=%,%s;Datebase=%s', 
+            $dsn = sprintf('%s:Server=%,%s;Datebase=%s',
             $_driver, $inst->hostname, $inst->port, $inst->database);
         }
 
@@ -281,15 +281,15 @@ class Dbh {
             'optional'=>[
                 'prefix'=>$inst->DBPrefix,
                 'logging'=>$inst->DBDebug,
-            ],               
+            ],
         ];
 
         $optional = ['charset'=>'charset', 'collation'=>'DBCollat', 'port'=>'port', ];
         foreach($optional as $k=>$v){
             if(isset($inst->$v) && !empty($inst->$v) ){
                 $link['optional'][$k] = $inst->$v;
-            }    
-        } 
+            }
+        }
 
         return $link;
     }
@@ -315,15 +315,15 @@ class Dbh {
             'optional'=>[
                 'prefix'=>$inst->dbprefix,
                 'logging'=>$inst->db_debug,
-            ],                 
+            ],
         ];
 
         $optional = ['charset'=>'char_set', 'collation'=>'dbcollat', 'port'=>'port', ];
         foreach($optional as $k=>$v){
             if(isset($inst->$v) && !empty($inst->$v) ){
                 $link['optional'][$k] = $inst->$v;
-            }    
-        }        
+            }
+        }
 
         return $link;
     }
