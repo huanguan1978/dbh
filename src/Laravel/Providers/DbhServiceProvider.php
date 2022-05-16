@@ -32,14 +32,14 @@ class DbhServiceProvider extends ServiceProvider
         $inst = app('dbh');
 
         $logpath = storage_path().DIRECTORY_SEPARATOR.'logs';
-        $inst->_fslog($logpath); // fslog object init 
+        $inst->_fslog($logpath); // fslog object init
 
         $inst = app('dbh');
         $link = $inst->_link_lv6db();
         if($link){
             $inst->dbh('rw', $link['linker'], $link['driver'], $link['optional']);
-            $inst->_dblog($link['driver']); // dblog object init                    
+            $inst->_dblog($link['driver']); // dblog object init
         }
-        
+
     }
 }
