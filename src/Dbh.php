@@ -197,14 +197,25 @@ class Dbh {
         $rst = $inst->query('select 1;');
 
         $conf = $conn->getConfig();
+        // var_dump($conf);exit;
+        
+        $debug = false;
+        if(isset($conf['debug'])){
+            $debug = $conf['debug'];            
+        }
+        if(isset($conf['trigger_sql'])){
+            $debug = $conf['trigger_sql'];            
+        }
+        
         $link = [
             'linker'=>$conn->getPdo(),
             'driver'=>$conf['type'],
             'optional'=>[
                 'prefix'=>$conf['prefix'],
-                'logging'=>$conf['debug'],
+                'logging'=>$debug,
             ],
         ];
+
         $optional = ['charset', 'collation', 'port', ];
         foreach($optional as $item){
             if(isset($conf[$item]) && !empty($conf[$item]) ){
