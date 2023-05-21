@@ -4,46 +4,45 @@
     "type": "library",
     "license": "MIT",
     "authors": [
-        {
-            "name": "crown.hg",
-            "email": "crown.hg@gmail.com"
-        }
+	{
+	    "name": "crown.hg",
+	    "email": "crown.hg@gmail.com"
+	}
     ],
     "require": {
-        "catfan/medoo": "^2.1",
-        "wixel/gump": "^1.12",
-        "orz/plog": "^0.1"
+	"catfan/medoo": "^2.1",
+	"orz/plog": "^0.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.0"
+	"phpunit/phpunit": "^9.0"
     },
     "autoload": {
-        "psr-4": {
-            "Dbh\\": "src/"
-        }
+	"psr-4": {
+	    "Dbh\\": "src/"
+	}
     },
     "autoload-dev": {
-        "psr-4": {
-            "Dbh\\Tests\\": "tests/"
-        }
-    },	
+	"psr-4": {
+	    "Dbh\\Tests\\": "tests/"
+	}
+    },
     "scripts": {
 	    "test": "vendor/bin/phpunit tests"
     },
 
     "extra": {
-        "think":{
-            "services":[
-                "Dbh\\thinkphp\\services\\DbhService"
-            ]      
-        },       
-        "laravel": {
-            "providers": [
-                "Dbh\\Laravel\\Providers\\DbhServiceProvider"
-            ],
-            "aliases": {
-                "dbh": "Dbh\\Laravel\\Facades\\DbhFacade"
-            }            
-        }
-    } 
+	"think":{
+	    "services":[
+		"Dbh\\thinkphp\\services\\DbhService"
+	    ]
+	},
+	"laravel": {
+	    "providers": [
+		"Dbh\\Laravel\\Providers\\DbhServiceProvider"
+	    ],
+	    "aliases": {
+		"dbh": "Dbh\\Laravel\\Facades\\DbhFacade"
+	    }
+	}
+    }
 }

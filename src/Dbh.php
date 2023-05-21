@@ -6,7 +6,6 @@
 
 namespace Dbh;
 
-use GUMP;
 use Medoo\Medoo;
 
 use Plog\Plogger;
@@ -131,32 +130,6 @@ class Dbh {
     }
 
     /**
-      数据校验器
-      @param string $data 要校验的数据
-      @param string $rule 校验规则集
-      @param string $fliter 数据过滤集
-      @param string $emsg 自定校验错误显示信息
-      @return array 校验结果,如[0, $data, $emsg], 索引1值0有错1无值，索引2处理过的数据，索引3出错清单
-    */
-    function validate(array $data, array $rule, array $fliter=[], array $emsg=[] ):array {
-        $gump = new GUMP();
-        $gump->validation_rules($rule);
-        $gump->set_fields_error_messages($emsg);
-        $gump->filter_rules($fliter);
-        $data = $gump->run($data);
-
-        $result = [0, $data, $emsg];
-        if($gump->errors()){
-            $result[2] = $gump->get_errors_array();
-        }else{ // successs
-            $result[0]=1;
-            $result[2] = [];
-        }
-
-        return $result;
-    }
-
-    /**
       获取TP5的PDO连接对象，用门面\think\Db的connect获得实例
       @return array 数组结构返回，键driver为数据驱动器名称，键linker为数据连接器实例
     */
@@ -198,15 +171,15 @@ class Dbh {
 
         $conf = $conn->getConfig();
         // var_dump($conf);exit;
-        
+
         $debug = false;
         if(isset($conf['debug'])){
-            $debug = $conf['debug'];            
+            $debug = $conf['debug'];
         }
         if(isset($conf['trigger_sql'])){
-            $debug = $conf['trigger_sql'];            
+            $debug = $conf['trigger_sql'];
         }
-        
+
         $link = [
             'linker'=>$conn->getPdo(),
             'driver'=>$conf['type'],
