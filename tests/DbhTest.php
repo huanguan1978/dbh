@@ -86,9 +86,9 @@ class DbhTest extends TestCase {
                 $this->assertNotEmpty($rec);
                 if($rec){
                     $this->assertSame($level, $rec['severity']);
-                    $this->assertSame($message, $rec['message']);    
+                    $this->assertSame($message, $rec['message']);
                 }
-                
+
             }
         }
     }
